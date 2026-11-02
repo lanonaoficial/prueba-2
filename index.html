@@ -935,6 +935,7 @@
             <button class="cat-btn" onclick="filterCategory('TCG')"><i class="fa-solid fa-clone"></i> TCG</button>
             <button class="cat-btn" onclick="filterCategory('Juegos')"><i class="fa-solid fa-gamepad"></i> Juegos</button>
             <button class="cat-btn" onclick="filterCategory('Accesorios')"><i class="fa-solid fa-gem"></i> Accesorios</button>
+            <button class="cat-btn" onclick="filterCategory('Personalizados')"><i class="fa-solid fa-wand-magic-sparkles"></i> Personalizados</button>
             <button class="cat-btn" onclick="filterCategory('Poster')"><i class="fa-solid fa-image"></i> Posters</button>
             <button class="cat-btn" onclick="filterCategory('Ropa')"><i class="fa-solid fa-shirt"></i> Ropa</button>
         </div>
@@ -1144,6 +1145,7 @@
             else if (p.id && p.id.startsWith('IMP')) cat = "Papelería";
             else if (p.id && p.id.startsWith('JUE')) cat = "Juegos / Diversión";
             else if (p.id && p.id.startsWith('ACC')) cat = "Accesorios";
+            else if (p.id && p.id.startsWith('PER')) cat = "Personalizados";
 
             modalImagesList = [];
             if (p.imagen && !p.imagen.includes("Aquí va el link")) {
@@ -1254,6 +1256,7 @@
                 else if (p.id && p.id.startsWith('IMP')) cat = "Papelería";
                 else if (p.id && p.id.startsWith('JUE')) cat = "Juegos / Diversión";
                 else if (p.id && p.id.startsWith('ACC')) cat = "Accesorios";
+                else if (p.id && p.id.startsWith('PER')) cat = "Personalizados";
 
                 let images = [];
                 if (p.imagen && !p.imagen.includes("Aquí va el link")) {
@@ -1317,25 +1320,75 @@
                 renderProducts(products.filter(p => {
                     if (!p.id) return true;
                     
+                    let idLower = p.id ? p.id.toLowerCase() : "";
                     let nombreLower = p.nombre ? p.nombre.toLowerCase() : "";
 
-                    if (cat === 'Manga') return p.id.startsWith('AN');
-                    if (cat === 'Figura') return p.id.startsWith('ANI') || nombreLower.includes('figura');
-                    if (cat === 'TCG') return p.id.startsWith('TCG');
-                    if (cat === 'Juegos') return p.id.startsWith('JUE');
-                    
+                    if (cat === 'Manga') {
+                        return idLower.startsWith('an') && 
+                               !nombreLower.includes('camiseta') && 
+                               !nombreLower.includes('ropa') && 
+                               !nombreLower.includes('llavero') && 
+                               !nombreLower.includes('pin') && 
+                               !nombreLower.includes('poster') && 
+                               !nombreLower.includes('póster') &&
+                               !nombreLower.includes('pocillo') &&
+                               !nombreLower.includes('taza') &&
+                               !nombreLower.includes('personalizado');
+                    }
+
+                    if (cat === 'Figura') {
+                        return idLower.startsWith('ani') || 
+                               nombreLower.includes('figura') || 
+                               nombreLower.includes('funko') || 
+                               nombreLower.includes('nendoroid');
+                    }
+
+                    if (cat === 'TCG') {
+                        return idLower.startsWith('tcg') || 
+                               nombreLower.includes('carta') || 
+                               nombreLower.includes('sobre') || 
+                               nombreLower.includes('booster');
+                    }
+
+                    if (cat === 'Juegos') {
+                        return idLower.startsWith('jue') || 
+                               nombreLower.includes('juego');
+                    }
+
                     if (cat === 'Accesorios') {
-                        return p.id.startsWith('ACC') || 
+                        return (idLower.startsWith('acc') || 
                                nombreLower.includes('llavero') || 
                                nombreLower.includes('pin') || 
                                nombreLower.includes('colgante') || 
                                nombreLower.includes('collar') || 
                                nombreLower.includes('pulsera') || 
-                               nombreLower.includes('manilla');
+                               nombreLower.includes('pocillo') ||
+                               nombreLower.includes('taza')) &&
+                               !nombreLower.includes('personalizado');
                     }
 
-                    if (cat === 'Poster') return nombreLower.includes('poster') || nombreLower.includes('póster');
-                    if (cat === 'Ropa') return p.id.startsWith('ROP') || nombreLower.includes('camisa') || nombreLower.includes('hoodie') || nombreLower.includes('saco');
+                    // FILTRO DE PERSONALIZADOS (Detecta código PER o palabras clave)
+                    if (cat === 'Personalizados') {
+                        return idLower.startsWith('per') || 
+                               nombreLower.includes('personalizado') || 
+                               nombreLower.includes('custom') || 
+                               nombreLower.includes('a pedido');
+                    }
+
+                    if (cat === 'Poster') {
+                        return nombreLower.includes('poster') || 
+                               nombreLower.includes('póster') || 
+                               nombreLower.includes('cuadro');
+                    }
+
+                    if (cat === 'Ropa') {
+                        return (idLower.startsWith('rop') || 
+                               nombreLower.includes('camisa') || 
+                               nombreLower.includes('camiseta') || 
+                               nombreLower.includes('hoodie') || 
+                               nombreLower.includes('saco')) &&
+                               !nombreLower.includes('personalizado');
+                    }
                     
                     return true;
                 }));
