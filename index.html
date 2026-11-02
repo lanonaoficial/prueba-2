@@ -737,7 +737,7 @@
             font-size: 12px;
         }
 
-        /* ESTILOS PARA LOS BOTONES DE PAGO (2 OPCIONES) Y ENTREGA */
+        /* ESTILOS PARA LAS TARJETAS / LOGOS DE PAGO Y ENTREGA */
         .payment-options, .delivery-options {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -755,6 +755,16 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .payment-option-card img {
+            height: 22px;
+            object-fit: contain;
         }
 
         .payment-option-card.selected, .delivery-option-card.selected {
@@ -996,12 +1006,18 @@
 
             <div class="order-summary-section" style="border-top: 1px dashed #ddd; padding-top: 8px; display: flex; flex-direction: column; gap: 8px;">
                 
-                <!-- SELECCIÓN DE MÉTODO DE PAGO (NEQUI / SISTECRÉDITO) -->
+                <!-- SELECCIÓN DE MÉTODO DE PAGO CON LOGOS -->
                 <div class="form-group-custom">
                     <label style="font-size: 11px; font-weight: 700;">Forma de Pago</label>
                     <div class="payment-options">
-                        <div class="payment-option-card selected" id="payNequi" onclick="setPayment('Nequi')">Nequi</div>
-                        <div class="payment-option-card" id="paySistecredito" onclick="setPayment('Sistecrédito')">Sistecrédito (+9%)</div>
+                        <div class="payment-option-card selected" id="payNequi" onclick="setPayment('Nequi')">
+                            <img src="assets/pagos/nequi.png" alt="Nequi" onerror="this.style.display='none'">
+                            <span>Nequi</span>
+                        </div>
+                        <div class="payment-option-card" id="paySistecredito" onclick="setPayment('Sistecrédito')">
+                            <img src="assets/pagos/sistecredito.png" alt="Sistecrédito" onerror="this.style.display='none'">
+                            <span>Sistecrédito (+9%)</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1024,10 +1040,6 @@
                 <div style="display:flex; justify-content:space-between; font-size:12px; color:#555; margin-top: 4px;">
                     <span>Artículos (<span id="summaryCount">0</span>)</span>
                     <span>$<span id="subtotalAmount">0</span></span>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
-                    <span>Descuento</span>
-                    <span style="color: var(--success);">- $<span id="discountAmount">0</span></span>
                 </div>
                 <div id="sistecreditoRow" style="display:none; justify-content:space-between; font-size:12px; color:var(--primary); font-weight:600;">
                     <span>Recargo Sistecrédito (9%)</span>
@@ -1374,7 +1386,6 @@
             const cartCount = document.getElementById('cartCount');
             const summaryCount = document.getElementById('summaryCount');
             const subtotalAmount = document.getElementById('subtotalAmount');
-            const discountAmount = document.getElementById('discountAmount');
             const totalAmount = document.getElementById('totalAmount');
             const sistecreditoRow = document.getElementById('sistecreditoRow');
             const sistecreditoFee = document.getElementById('sistecreditoFee');
@@ -1406,19 +1417,16 @@
                 });
             }
 
-            let discount = totalItems >= 4 ? subtotal * 0.08 : 0;
-            let baseTotal = subtotal - discount;
-
             let feeSistecredito = 0;
             if (paymentMethod === 'Sistecrédito') {
-                feeSistecredito = baseTotal * 0.09;
+                feeSistecredito = subtotal * 0.09;
                 sistecreditoRow.style.display = 'flex';
                 sistecreditoFee.innerText = Math.round(feeSistecredito).toLocaleString();
             } else {
                 sistecreditoRow.style.display = 'none';
             }
 
-            let total = baseTotal + feeSistecredito;
+            let total = subtotal + feeSistecredito;
             if (cart.length === 0) {
                 total = 0;
             }
@@ -1426,7 +1434,6 @@
             cartCount.innerText = totalItems;
             summaryCount.innerText = totalItems;
             subtotalAmount.innerText = subtotal.toLocaleString();
-            discountAmount.innerText = Math.round(discount).toLocaleString();
             totalAmount.innerText = Math.round(total).toLocaleString();
         }
 
@@ -1438,10 +1445,8 @@
 
             let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
             let totalItems = cart.reduce((acc, i) => acc + i.qty, 0);
-            let discount = totalItems >= 4 ? subtotal * 0.08 : 0;
-            let baseTotal = subtotal - discount;
-            let feeSistecredito = paymentMethod === 'Sistecrédito' ? baseTotal * 0.09 : 0;
-            let total = Math.round(baseTotal + feeSistecredito);
+            let feeSistecredito = paymentMethod === 'Sistecrédito' ? subtotal * 0.09 : 0;
+            let total = Math.round(subtotal + feeSistecredito);
 
             let addressText = document.getElementById('shippingAddress').value.trim();
             if (deliveryMethod === 'Envío a domicilio' && !addressText) {
@@ -1465,7 +1470,6 @@
                 message += `📍 *Dirección de Envío:* ${encodeURIComponent(addressText)}%0A`;
             }
 
-            if (discount > 0) message += `🏷️ *Descuento:* -$${Math.round(discount).toLocaleString()}%0A`;
             message += `💰 *TOTAL PRODUCTOS:* *$${total.toLocaleString()}*%0A`;
             
             if (deliveryMethod === 'Envío a domicilio') {
