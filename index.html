@@ -383,7 +383,7 @@
             gap: 6px;
         }
 
-        /* ===== MODAL DEL PRODUCTO AGRANDADO CON DESCRIPCIÓN ===== */
+        /* ===== MODAL DE PRODUCTO DETALLADO CON DESCRIPCIÓN Y ZOOM ===== */
         .product-modal-overlay {
             position: fixed;
             top: 0;
@@ -737,6 +737,32 @@
             font-size: 12px;
         }
 
+        /* ESTILOS PARA LOS BOTONES DE PAGO (2 OPCIONES) Y ENTREGA */
+        .payment-options, .delivery-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .payment-option-card, .delivery-option-card {
+            background: #f1f3f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .payment-option-card.selected, .delivery-option-card.selected {
+            background: var(--secondary);
+            border-color: var(--primary);
+            color: var(--dark);
+        }
+
         .btn-whatsapp-order {
             width: 100%;
             background-color: var(--whatsapp);
@@ -964,31 +990,38 @@
                 <span style="font-size: 11px; color: var(--primary); cursor: pointer;" onclick="clearCart()">Vaciar todo</span>
             </div>
 
-            <div class="cart-items-list" id="cartItemsList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+            <div class="cart-items-list" id="cartItemsList" style="max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                 <div class="empty-cart-msg">Tu carrito está vacío.<br>¡Agrega productos para comenzar!</div>
             </div>
 
-            <div class="order-summary-section" style="border-top: 1px dashed #ddd; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="order-summary-section" style="border-top: 1px dashed #ddd; padding-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                
+                <!-- SELECCIÓN DE MÉTODO DE PAGO (NEQUI / SISTECRÉDITO) -->
                 <div class="form-group-custom">
                     <label style="font-size: 11px; font-weight: 700;">Forma de Pago</label>
                     <div class="payment-options">
-                        <div class="payment-option-card selected" id="payDirect" onclick="setPayment('direct')">Pago Directo</div>
-                        <div class="payment-option-card" id="payCod" onclick="setPayment('cod')">Contraentrega</div>
+                        <div class="payment-option-card selected" id="payNequi" onclick="setPayment('Nequi')">Nequi</div>
+                        <div class="payment-option-card" id="paySistecredito" onclick="setPayment('Sistecrédito')">Sistecrédito (+9%)</div>
                     </div>
                 </div>
 
+                <!-- SELECCIÓN DE MÉTODO DE ENTREGA -->
                 <div class="form-group-custom">
-                    <label for="shippingCity" style="font-size: 11px; font-weight: 700;">Ciudad de Entrega</label>
-                    <select id="shippingCity" onchange="updateTotals()" style="width:100%; padding: 6px; border:1px solid #ccc; border-radius:6px; font-size:12px;">
-                        <option value="Piedecuesta">Piedecuesta ($8.000)</option>
-                        <option value="Bucaramanga">Bucaramanga ($9.000)</option>
-                        <option value="Floridablanca">Floridablanca ($9.000)</option>
-                        <option value="Girón">Girón ($10.000)</option>
-                        <option value="Otro Municipio">Otro Municipio ($15.000)</option>
-                    </select>
+                    <label style="font-size: 11px; font-weight: 700;">Método de Entrega</label>
+                    <div class="delivery-options">
+                        <div class="delivery-option-card selected" id="delTienda" onclick="setDelivery('Recoger en tienda')">Recoger en Tienda</div>
+                        <div class="delivery-option-card" id="delEnvio" onclick="setDelivery('Envío a domicilio')">Envío a Domicilio</div>
+                    </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
+                <!-- CAMPO DE DIRECCIÓN SI ESCOGE ENVÍO -->
+                <div class="form-group-custom" id="shippingAddressGroup" style="display: none;">
+                    <label for="shippingAddress" style="font-size: 11px; font-weight: 700;">Dirección y Ciudad de Envío:</label>
+                    <textarea id="shippingAddress" placeholder="Ej: Calle 5 # 10-20, Barrio San Carlos, Piedecuesta" style="width:100%; padding: 6px; border:1px solid #ccc; border-radius:6px; font-size:11px; resize: none; height: 50px;"></textarea>
+                    <span style="font-size: 9px; color: #e60012; font-weight: 600; display: block; margin-top: 2px;">⚠️ El costo del envío se te comunicará por WhatsApp.</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#555; margin-top: 4px;">
                     <span>Artículos (<span id="summaryCount">0</span>)</span>
                     <span>$<span id="subtotalAmount">0</span></span>
                 </div>
@@ -996,12 +1029,12 @@
                     <span>Descuento</span>
                     <span style="color: var(--success);">- $<span id="discountAmount">0</span></span>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
-                    <span>Envío</span>
-                    <span>$<span id="shippingAmount">8.000</span></span>
+                <div id="sistecreditoRow" style="display:none; justify-content:space-between; font-size:12px; color:var(--primary); font-weight:600;">
+                    <span>Recargo Sistecrédito (9%)</span>
+                    <span>+$<span id="sistecreditoFee">0</span></span>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:bold; color:var(--primary); border-top:1px solid #eee; padding-top:6px;">
-                    <span>TOTAL</span>
+                    <span>TOTAL PRODUCTOS</span>
                     <span>$<span id="totalAmount">0</span></span>
                 </div>
 
@@ -1025,7 +1058,8 @@
         let products = [];
         let cart = [];
         let currentCategory = 'todos';
-        let paymentMethod = 'direct';
+        let paymentMethod = 'Nequi';
+        let deliveryMethod = 'Recoger en tienda';
         let isCartOpen = false;
 
         let modalImagesList = [];
@@ -1038,7 +1072,6 @@
             let width = canvas.width = window.innerWidth;
             let height = canvas.height = window.innerHeight;
 
-            // Colores navideños de COMICLANONA
             const particleColors = ['rgba(230, 0, 18, 0.7)', 'rgba(37, 211, 102, 0.7)', 'rgba(255, 204, 0, 0.8)'];
 
             const flakes = Array.from({ length: 50 }, () => ({
@@ -1110,7 +1143,6 @@
             document.getElementById('modalTitle').innerText = p.nombre;
             document.getElementById('modalPrice').innerText = `$${p.precio.toLocaleString()}`;
             
-            // LEE LA DESCRIPCIÓN DIRECTAMENTE DEL JSON
             const desc = p.descripcion || `Producto oficial y coleccionable de ${p.nombre}. ¡Disponible en COMICLANONA para entrega inmediata! 🎁`;
             document.getElementById('modalDescription').innerText = desc;
 
@@ -1157,7 +1189,6 @@
             }
         }
 
-        // FUNCIONES DE ZOOM
         function openZoomModal() {
             if (modalImagesList.length === 0) return;
             const zoomImg = document.getElementById('zoomImg');
@@ -1320,8 +1351,22 @@
 
         function setPayment(method) {
             paymentMethod = method;
-            document.getElementById('payDirect').classList.toggle('selected', method === 'direct');
-            document.getElementById('payCod').classList.toggle('selected', method === 'cod');
+            document.getElementById('payNequi').classList.toggle('selected', method === 'Nequi');
+            document.getElementById('paySistecredito').classList.toggle('selected', method === 'Sistecrédito');
+            updateCartUI();
+        }
+
+        function setDelivery(method) {
+            deliveryMethod = method;
+            document.getElementById('delTienda').classList.toggle('selected', method === 'Recoger en tienda');
+            document.getElementById('delEnvio').classList.toggle('selected', method === 'Envío a domicilio');
+            
+            const addressGroup = document.getElementById('shippingAddressGroup');
+            if (method === 'Envío a domicilio') {
+                addressGroup.style.display = 'block';
+            } else {
+                addressGroup.style.display = 'none';
+            }
         }
 
         function updateCartUI() {
@@ -1330,8 +1375,9 @@
             const summaryCount = document.getElementById('summaryCount');
             const subtotalAmount = document.getElementById('subtotalAmount');
             const discountAmount = document.getElementById('discountAmount');
-            const shippingAmount = document.getElementById('shippingAmount');
             const totalAmount = document.getElementById('totalAmount');
+            const sistecreditoRow = document.getElementById('sistecreditoRow');
+            const sistecreditoFee = document.getElementById('sistecreditoFee');
 
             let totalItems = 0;
             let subtotal = 0;
@@ -1361,16 +1407,19 @@
             }
 
             let discount = totalItems >= 4 ? subtotal * 0.08 : 0;
-            const city = document.getElementById('shippingCity').value;
+            let baseTotal = subtotal - discount;
 
-            let shippingCost = 8000;
-            if (city === 'Bucaramanga' || city === 'Floridablanca') shippingCost = 9000;
-            if (city === 'Girón') shippingCost = 10000;
-            if (city === 'Otro Municipio') shippingCost = 15000;
+            let feeSistecredito = 0;
+            if (paymentMethod === 'Sistecrédito') {
+                feeSistecredito = baseTotal * 0.09;
+                sistecreditoRow.style.display = 'flex';
+                sistecreditoFee.innerText = Math.round(feeSistecredito).toLocaleString();
+            } else {
+                sistecreditoRow.style.display = 'none';
+            }
 
-            let total = subtotal - discount + shippingCost;
+            let total = baseTotal + feeSistecredito;
             if (cart.length === 0) {
-                shippingCost = 0;
                 total = 0;
             }
 
@@ -1378,12 +1427,7 @@
             summaryCount.innerText = totalItems;
             subtotalAmount.innerText = subtotal.toLocaleString();
             discountAmount.innerText = Math.round(discount).toLocaleString();
-            shippingAmount.innerText = shippingCost.toLocaleString();
             totalAmount.innerText = Math.round(total).toLocaleString();
-        }
-
-        function updateTotals() {
-            updateCartUI();
         }
 
         function sendWhatsAppOrder() {
@@ -1392,13 +1436,18 @@
                 return;
             }
 
-            const city = document.getElementById('shippingCity').value || 'Piedecuesta';
-            const payText = paymentMethod === 'direct' ? 'Pago Directo (Nequi / Daviplata)' : 'Contraentrega';
             let subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
             let totalItems = cart.reduce((acc, i) => acc + i.qty, 0);
             let discount = totalItems >= 4 ? subtotal * 0.08 : 0;
-            let shippingCost = city === 'Bucaramanga' || city === 'Floridablanca' ? 9000 : (city === 'Girón' ? 10000 : (city === 'Otro Municipio' ? 15000 : 8000));
-            let total = Math.round(subtotal - discount + shippingCost);
+            let baseTotal = subtotal - discount;
+            let feeSistecredito = paymentMethod === 'Sistecrédito' ? baseTotal * 0.09 : 0;
+            let total = Math.round(baseTotal + feeSistecredito);
+
+            let addressText = document.getElementById('shippingAddress').value.trim();
+            if (deliveryMethod === 'Envío a domicilio' && !addressText) {
+                alert('Por favor ingresa tu dirección y ciudad para el envío.');
+                return;
+            }
 
             let message = `¡Hola COMICLANONA! 🎁🎄 Quiero realizar el siguiente pedido:%0A%0A`;
             cart.forEach(i => {
@@ -1406,12 +1455,24 @@
             });
             message += `%0A----------------------------%0A`;
             message += `📦 *Artículos:* ${totalItems}%0A`;
-            message += `🏙️ *Ciudad:* ${city}%0A`;
-            message += `💳 *Pago:* ${payText}%0A`;
+            message += `💳 *Método de Pago:* ${paymentMethod}%0A`;
+            if (paymentMethod === 'Sistecrédito') {
+                message += `📈 *Recargo Sistecrédito (9%):* +$${Math.round(feeSistecredito).toLocaleString()}%0A`;
+            }
+            message += `🚚 *Método de Entrega:* ${deliveryMethod}%0A`;
+            
+            if (deliveryMethod === 'Envío a domicilio') {
+                message += `📍 *Dirección de Envío:* ${encodeURIComponent(addressText)}%0A`;
+            }
+
             if (discount > 0) message += `🏷️ *Descuento:* -$${Math.round(discount).toLocaleString()}%0A`;
-            message += `🚚 *Envío:* $${shippingCost.toLocaleString()}%0A`;
-            message += `💰 *TOTAL A PAGAR:* *$${total.toLocaleString()}*%0A%0A`;
-            message += `¡Quedo atento(a)! ✨`;
+            message += `💰 *TOTAL PRODUCTOS:* *$${total.toLocaleString()}*%0A`;
+            
+            if (deliveryMethod === 'Envío a domicilio') {
+                message += `*(El costo del envío se coordinará por este medio)*%0A`;
+            }
+
+            message += `%0A¡Quedo atento(a)! ✨`;
 
             window.open(`https://wa.me/573002506144?text=${message}`, '_blank');
         }
