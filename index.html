@@ -933,7 +933,8 @@
             <button class="cat-btn" onclick="filterCategory('Manga')"><i class="fa-solid fa-book-open"></i> Manga</button>
             <button class="cat-btn" onclick="filterCategory('Figura')"><i class="fa-solid fa-chess-knight"></i> Figuras</button>
             <button class="cat-btn" onclick="filterCategory('TCG')"><i class="fa-solid fa-clone"></i> TCG</button>
-            <button class="cat-btn" onclick="filterCategory('Llavero')"><i class="fa-solid fa-key"></i> Llaveros</button>
+            <button class="cat-btn" onclick="filterCategory('Juegos')"><i class="fa-solid fa-gamepad"></i> Juegos</button>
+            <button class="cat-btn" onclick="filterCategory('Accesorios')"><i class="fa-solid fa-gem"></i> Accesorios</button>
             <button class="cat-btn" onclick="filterCategory('Poster')"><i class="fa-solid fa-image"></i> Posters</button>
             <button class="cat-btn" onclick="filterCategory('Ropa')"><i class="fa-solid fa-shirt"></i> Ropa</button>
         </div>
@@ -1142,6 +1143,7 @@
             else if (p.id && p.id.startsWith('TCG')) cat = "TCG / Cartas";
             else if (p.id && p.id.startsWith('IMP')) cat = "Papelería";
             else if (p.id && p.id.startsWith('JUE')) cat = "Juegos / Diversión";
+            else if (p.id && p.id.startsWith('ACC')) cat = "Accesorios";
 
             modalImagesList = [];
             if (p.imagen && !p.imagen.includes("Aquí va el link")) {
@@ -1251,6 +1253,7 @@
                 else if (p.id && p.id.startsWith('TCG')) cat = "TCG / Cartas";
                 else if (p.id && p.id.startsWith('IMP')) cat = "Papelería";
                 else if (p.id && p.id.startsWith('JUE')) cat = "Juegos / Diversión";
+                else if (p.id && p.id.startsWith('ACC')) cat = "Accesorios";
 
                 let images = [];
                 if (p.imagen && !p.imagen.includes("Aquí va el link")) {
@@ -1313,12 +1316,27 @@
             } else {
                 renderProducts(products.filter(p => {
                     if (!p.id) return true;
+                    
+                    let nombreLower = p.nombre ? p.nombre.toLowerCase() : "";
+
                     if (cat === 'Manga') return p.id.startsWith('AN');
-                    if (cat === 'Figura') return p.id.startsWith('ANI') || p.nombre.toLowerCase().includes('figura');
+                    if (cat === 'Figura') return p.id.startsWith('ANI') || nombreLower.includes('figura');
                     if (cat === 'TCG') return p.id.startsWith('TCG');
-                    if (cat === 'Llavero') return p.nombre.toLowerCase().includes('llavero');
-                    if (cat === 'Poster') return p.nombre.toLowerCase().includes('poster');
-                    if (cat === 'Ropa') return p.id.startsWith('ROP') || p.nombre.toLowerCase().includes('camisa') || p.nombre.toLowerCase().includes('hoodie');
+                    if (cat === 'Juegos') return p.id.startsWith('JUE');
+                    
+                    if (cat === 'Accesorios') {
+                        return p.id.startsWith('ACC') || 
+                               nombreLower.includes('llavero') || 
+                               nombreLower.includes('pin') || 
+                               nombreLower.includes('colgante') || 
+                               nombreLower.includes('collar') || 
+                               nombreLower.includes('pulsera') || 
+                               nombreLower.includes('manilla');
+                    }
+
+                    if (cat === 'Poster') return nombreLower.includes('poster') || nombreLower.includes('póster');
+                    if (cat === 'Ropa') return p.id.startsWith('ROP') || nombreLower.includes('camisa') || nombreLower.includes('hoodie') || nombreLower.includes('saco');
+                    
                     return true;
                 }));
             }
